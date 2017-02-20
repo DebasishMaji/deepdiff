@@ -709,8 +709,7 @@ class DeepDiff(ResultDict):
 
         :rtype: None
         """
-        if self.accept_later:
-            pass
+
         if not self.__skip_this(level):
             level.report_type = report_type
             self.tree[report_type].add(level)
