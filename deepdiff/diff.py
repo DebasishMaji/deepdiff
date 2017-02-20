@@ -33,6 +33,7 @@ else:  # pragma: no cover
 logger = logging.getLogger(__name__)
 
 
+
 class DeepDiff(ResultDict):
     r"""
     **DeepDiff**
@@ -609,6 +610,19 @@ class DeepDiff(ResultDict):
 
     show_warning = True
 
+    def dict_result(self):
+        result_dict = dict()
+
+        data = self.result_text['values_changed']
+        for item in data.items():
+            if self.accept_later:
+                result_dict[item[0].partition('[')[-1].rpartition(']')[0]] = item[1].get('new_value')
+            elif self.accept_earlier:
+                result_dict[item[0].partition('[')[-1].rpartition(']')[0]] = item[1].get('old_value')
+            elif self.accept_new:
+                pass
+        return result_dict
+
     def __init__(self,
                  t1,
                  t2,
@@ -620,11 +634,11 @@ class DeepDiff(ResultDict):
                  verbose_level=1,
                  view='text',
                  **kwargs):
-        if kwargs:
-            raise ValueError((
-                "The following parameter(s) are not valid: %s\n"
-                "The valid parameters are ignore_order, report_repetition, significant_digits,"
-                "exclude_paths, exclude_types, verbose_level and view.") % ', '.join(kwargs.keys()))
+        # if kwargs:
+        #     raise ValueError((
+        #         "The following parameter(s) are not valid: %s\n"
+        #         "The valid parameters are ignore_order, report_repetition, significant_digits,"
+        #         "exclude_paths, exclude_types, verbose_level and view.") % ', '.join(kwargs.keys()))
 
         self.ignore_order = ignore_order
         self.report_repetition = report_repetition
@@ -633,6 +647,9 @@ class DeepDiff(ResultDict):
         self.exclude_types_tuple = tuple(
             exclude_types)  # we need tuple for checking isinstance
         self.hashes = {}
+        self.accept_later = kwargs.get('accept_later')
+        self.accept_earlier = kwargs.get('accept_earlier')
+        self.accept_new = kwargs.get('accept_new')
 
         if significant_digits is not None and significant_digits < 0:
             raise ValueError(
@@ -657,6 +674,9 @@ class DeepDiff(ResultDict):
             self.update(
                 result_text
             )  # be compatible to DeepDiff 2.x if user didn't specify otherwise
+
+        self.result_text = result_text
+        self.result_dict = self.dict_result()
 
     # TODO: adding adding functionality
     # def __add__(self, other):
@@ -689,9 +709,13 @@ class DeepDiff(ResultDict):
 
         :rtype: None
         """
+        if self.accept_later:
+            pass
         if not self.__skip_this(level):
             level.report_type = report_type
             self.tree[report_type].add(level)
+
+
 
     @staticmethod
     def __add_to_frozen_set(parents_ids, item_id):
@@ -1053,7 +1077,7 @@ class DeepDiff(ResultDict):
     def __diff_types(self, level):
         """Diff types"""
         level.report_type = 'type_changes'
-        self.__report_result('type_changes', level)
+        self.__report_recsult('type_changes', level)
 
     def __diff(self, level, parents_ids=frozenset({})):
         """The main diff method"""
@@ -1094,6 +1118,7 @@ class DeepDiff(ResultDict):
 
     @property
     def json(self):
+        import pdb;pdb.set_trace()
         if not hasattr(self, '_json'):
             # copy of self removes all the extra attributes since it assumes
             # we have only a simple dictionary.
