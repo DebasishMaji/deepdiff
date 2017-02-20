@@ -1118,7 +1118,6 @@ class DeepDiff(ResultDict):
 
     @property
     def json(self):
-        import pdb;pdb.set_trace()
         if not hasattr(self, '_json'):
             # copy of self removes all the extra attributes since it assumes
             # we have only a simple dictionary.
