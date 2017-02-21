@@ -616,9 +616,9 @@ class DeepDiff(ResultDict):
         data = self.result_text['values_changed']
         for item in data.items():
             if self.accept_later:
-                result_dict[item[0].partition('[')[-1].rpartition(']')[0]] = item[1].get('new_value')
+                result_dict[item[0].partition('[')[-1].rpartition(']')[0].replace("'", "")] = item[1].get('new_value')
             elif self.accept_earlier:
-                result_dict[item[0].partition('[')[-1].rpartition(']')[0]] = item[1].get('old_value')
+                result_dict[item[0].partition('[')[-1].rpartition(']')[0].replace("'", "")] = item[1].get('old_value')
             elif self.accept_new:
                 pass
         return result_dict
@@ -650,6 +650,7 @@ class DeepDiff(ResultDict):
         self.accept_later = kwargs.get('accept_later')
         self.accept_earlier = kwargs.get('accept_earlier')
         self.accept_new = kwargs.get('accept_new')
+        self.result_dict = dict()
 
         if significant_digits is not None and significant_digits < 0:
             raise ValueError(
@@ -709,11 +710,16 @@ class DeepDiff(ResultDict):
 
         :rtype: None
         """
-
         if not self.__skip_this(level):
             level.report_type = report_type
             self.tree[report_type].add(level)
-
+        # if level.__dict__['_path']:
+        #     if self.accept_later:
+        #         self.result_dict[level.__dict__['_path'][None].partition('[')[-1].rpartition(']')[0].replace("'", "")] = level.t2
+        #     elif self.accept_earlier:
+        #         self.result_dict[level.__dict__['_path'][None].partition('[')[-1].rpartition(']')[0].replace("'", "")] = level.t1
+        #     elif self.accept_new:
+        #         pass
 
 
     @staticmethod
